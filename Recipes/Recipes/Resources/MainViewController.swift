@@ -8,11 +8,13 @@
 
 import UIKit
 
-class MainViewController: UIViewController {
+class MainViewController: UIViewController, UITextFieldDelegate {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        searchTextField.delegate = self
+        
         networkClient.fetchRecipes { (recipes, error) in
             if let error = error{
                 NSLog("Error fetching recipes: \(error)")
@@ -24,18 +26,24 @@ class MainViewController: UIViewController {
         }
     }
     
-    @IBAction func searchRecipes(_ sender: UITextField) {
-        sender.resignFirstResponder()
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        searchTextField.resignFirstResponder()
         filterRecipes()
+        return true
     }
     
-    
-    private func filterRecipes() {
-        
+    func filterRecipes() {
         guard let searchWords = searchTextField.text else {
             filteredRecipes = allRecipes
             return }
-        filteredRecipes = allRecipes.filter { $0.name.contains(searchWords) || $0.instructions.contains(searchWords)}
+        if searchWords == "" {
+            filteredRecipes = allRecipes
+        } else {
+            filteredRecipes = allRecipes.filter({ (recipe) -> Bool in
+                recipe.name.contains(searchWords) || recipe.instructions.contains(searchWords)
+            })
+        }
+        
         
     }
     
@@ -45,8 +53,11 @@ class MainViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "EmbedRecipesTVC" {
             recipesTableViewController = (segue.destination as! RecipesTableViewController)
+            
+
         }
     }
+
     
     let networkClient = RecipesNetworkClient()
     
@@ -64,6 +75,7 @@ class MainViewController: UIViewController {
     
     private var recipesTableViewController: RecipesTableViewController? {
         didSet {
+            
             recipesTableViewController?.recipes = filteredRecipes
         }
     }

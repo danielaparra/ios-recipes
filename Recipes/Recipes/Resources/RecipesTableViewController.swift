@@ -9,6 +9,13 @@
 import UIKit
 
 class RecipesTableViewController: UITableViewController {
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        tableView.reloadData()
+    }
 
     // MARK: - Table view data source
 
@@ -30,7 +37,7 @@ class RecipesTableViewController: UITableViewController {
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == "ViewCell" {
+        if segue.identifier == "ViewRecipe" {
             guard let destinationVC = segue.destination as? RecipeDetailViewController,
                 let indexPath = tableView.indexPathForSelectedRow else { return }
             
@@ -40,7 +47,9 @@ class RecipesTableViewController: UITableViewController {
     
     var recipes: [Recipe] = [] {
         didSet {
-            tableView.reloadData()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
 
